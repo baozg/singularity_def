@@ -1,0 +1,23 @@
+Bootstrap: library
+From: ubuntu:20.04
+%post
+    apt-get update
+    apt-get install --assume-yes software-properties-common
+    add-apt-repository universe
+    apt-get update
+    apt-get install --assume-yes git build-essential zlib1g-dev libjemalloc-dev pkg-config cmake libgsl-dev libhts-dev
+    mkdir /metadata
+    echo `dpkg -l | grep jellyfish | tr -s " " | cut -d " " -f 2,3` > /metadata/jellyfish.lib.version
+    mkdir /repos
+    cd /repos
+    git clone --recursive https://github.com/ekg/wfmash.git
+    cd wfmash
+    git checkout -b wflign-diverged
+    cmake -H. -Bbuild
+    cmake --build build -- -j 3
+    cp /repos/wfmash/build/bin/wfmash /usr/local/bin
+    apt-get remove --assume-yes git software-properties-common cmake make pkg-config build-essential
+    apt-get autoremove --assume-yes
+    apt-get clean --assume-yes
+%environment
+    export LC_ALL=C
